@@ -77,35 +77,35 @@ jobs:
         echo "image-container-2=$ECR_REGISTRY/$ECR_REPOSITORY_C2:$IMAGE_TAG" >> $GITHUB_OUTPUT
         echo "image-reverse-proxy=$ECR_REGISTRY/$ECR_REPOSITORY_REVERSE_PROXY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    # - name: Fill in the new container-1 image ID in the Amazon ECS task definition
-    #   id: task-def-container-1
-    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-    #   with:
-    #     task-definition: ${{ env.ECS_TASK_DEFINITION }}
-    #     container-name: ${{ env.CONTAINER_NAME_container-1 }}
-    #     image: ${{ steps.build-image.outputs.image-container-1 }}
+    - name: Fill in the new container-1 image ID in the Amazon ECS task definition
+      id: task-def-container-1
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME_C1 }}
+        image: ${{ steps.build-image.outputs.image-container-1 }}
 
-    # - name: Fill in the new XXXX-app image ID in the Amazon ECS task definition
-    #   id: task-def-XXXX-app
-    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-    #   with:
-    #     task-definition: ${{ steps.task-def-container-1.outputs.task-definition }}
-    #     container-name: ${{ env.CONTAINER_NAME_XXXX-app }}
-    #     image: ${{ steps.build-image.outputs.image-XXXX-app }}
+    - name: Fill in the new container-2 image ID in the Amazon ECS task definition
+      id: task-def-container-2
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-container-1.outputs.task-definition }}
+        container-name: ${{ env.CONTAINER_NAME_C2 }}
+        image: ${{ steps.build-image.outputs.image-container-2 }}
 
-    # - name: Fill in the new api-server image ID in the Amazon ECS task definition
-    #   id: task-def-api-server
-    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-    #   with:
-    #     task-definition: ${{ steps.task-def-XXXX-app.outputs.task-definition }}
-    #     container-name: ${{ env.CONTAINER_NAME_api-server }}
-    #     image: ${{ steps.build-image.outputs.image-api-server }}
+    - name: Fill in the new api-server image ID in the Amazon ECS task definition
+      id: task-def-reverse-proxy
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def-container-2.outputs.task-definition }}
+        container-name: ${{ env.ECR_REPOSITORY_REVERSE_PROXY }}
+        image: ${{ steps.build-image.outputs.image-reverse-proxy }}
 
-    # - name: Deploy Amazon ECS task definition
-    #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-    #   with:
-    #     # task-def-nginxで作成したtask-definition
-    #     task-definition: ${{ steps.task-def-api-server.outputs.task-definition }}
-    #     service: ${{ env.ECS_SERVICE }}
-    #     cluster: ${{ env.ECS_CLUSTER }}
-    #     wait-for-service-stability: true
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        # task-def-nginxで作成したtask-definition
+        task-definition: ${{ steps.task-def-api-server.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
