@@ -5,9 +5,11 @@ http {
     server {
         listen 80;
         location /c1/ {
+            proxy_set_header Host $host;
             proxy_pass ${URL_C1};
         }
         location /c2/ {
+            proxy_set_header Host $host;
             proxy_pass ${URL_C2};
         }
     }
