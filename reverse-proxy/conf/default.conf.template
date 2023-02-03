@@ -9,7 +9,6 @@ http {
         }
         location /c2/ {
             proxy_pass ${URL_C2};
-            
         }
     }
 }
