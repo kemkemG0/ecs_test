@@ -23,4 +23,4 @@ services:
       - URL_C1=http://host.docker.internal:3000/
       - URL_C2=http://host.docker.internal:3001/
     # envsubstでテンプレートに環境変数を埋め込んで、それを > nginx.confで出力している
-    command: /bin/sh -c "envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    # command: /bin/sh -c "envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
