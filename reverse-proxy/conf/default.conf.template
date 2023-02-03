@@ -4,7 +4,6 @@ events {
 http {
     server {
         listen 80;
-        server_name ${SERVER_NAME};
         location /c1/ {
             proxy_pass ${URL_C1};
         }
