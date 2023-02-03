@@ -1,0 +1,111 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches: [ "main"]
+
+env:
+  AWS_REGION: us-east-1
+  # リポジトリの名前
+  ECR_REPOSITORY_C1: container-1
+  ECR_REPOSITORY_C2: container-2
+  ECR_REPOSITORY_REVERSE_PROXY: reverse-proxy
+  
+  ECS_SERVICE: test-service
+  ECS_CLUSTER: test-cluster
+  ECS_TASK_DEFINITION: .aws/task-def.json
+
+  CONTAINER_NAME_C1: container-1
+  CONTAINER_NAME_C2: container-2
+  CONTAINER_NAME_REVERSE_PROXY: reverse-proxy
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+
+    
+        echo "container_1 build start"
+        cd container_1/
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_C1:$IMAGE_TAG .
+        
+        echo "container_2 build start"
+        cd ../container_2/
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_C2:$IMAGE_TAG .
+        
+
+        echo "reverse-proxy build start"
+        cd reverse-proxy/
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_REVERSE_PROXY:$IMAGE_TAG .
+        
+        cd ../
+        
+        echo "!!BUILD END!!"
+        
+        echo "!!PUSH START!!"
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_C1:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_C2:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_REVERSE_PROXY:$IMAGE_TAG
+        echo "!!PUSH END!!"
+        
+        echo "image-container-1=$ECR_REGISTRY/$ECR_REPOSITORY_C1:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image-container-2=$ECR_REGISTRY/$ECR_REPOSITORY_C2:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image-reverse-proxy=$ECR_REGISTRY/$ECR_REPOSITORY_REVERSE_PROXY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    # - name: Fill in the new container-1 image ID in the Amazon ECS task definition
+    #   id: task-def-container-1
+    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+    #   with:
+    #     task-definition: ${{ env.ECS_TASK_DEFINITION }}
+    #     container-name: ${{ env.CONTAINER_NAME_container-1 }}
+    #     image: ${{ steps.build-image.outputs.image-container-1 }}
+
+    # - name: Fill in the new XXXX-app image ID in the Amazon ECS task definition
+    #   id: task-def-XXXX-app
+    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+    #   with:
+    #     task-definition: ${{ steps.task-def-container-1.outputs.task-definition }}
+    #     container-name: ${{ env.CONTAINER_NAME_XXXX-app }}
+    #     image: ${{ steps.build-image.outputs.image-XXXX-app }}
+
+    # - name: Fill in the new api-server image ID in the Amazon ECS task definition
+    #   id: task-def-api-server
+    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+    #   with:
+    #     task-definition: ${{ steps.task-def-XXXX-app.outputs.task-definition }}
+    #     container-name: ${{ env.CONTAINER_NAME_api-server }}
+    #     image: ${{ steps.build-image.outputs.image-api-server }}
+
+    # - name: Deploy Amazon ECS task definition
+    #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+    #   with:
+    #     # task-def-nginxで作成したtask-definition
+    #     task-definition: ${{ steps.task-def-api-server.outputs.task-definition }}
+    #     service: ${{ env.ECS_SERVICE }}
+    #     cluster: ${{ env.ECS_CLUSTER }}
+    #     wait-for-service-stability: true
