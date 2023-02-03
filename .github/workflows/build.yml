@@ -60,7 +60,7 @@ jobs:
         
 
         echo "reverse-proxy build start"
-        cd reverse-proxy/
+        cd ../reverse-proxy/
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_REVERSE_PROXY:$IMAGE_TAG .
         
         cd ../
