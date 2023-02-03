@@ -2,22 +2,19 @@ version: '3'
 
 services:
   first-container:
-    image: nginx
     container_name: 'first-container'
     build: ./container_1
     ports:
       - 3000:80
   
   second-container:
-    image: nginx
     container_name: 'second-container'
     build: ./container_2
     ports:
       - 3001:80
 
   reverse-proxy:
-    image: nginx
-    volumes:
-      - ./reverse-proxy/nginx.conf:/etc/nginx/nginx.conf
+    container_name: 'reverse-proxy'
+    build: ./reverse-proxy
     ports:
       - 80:80
