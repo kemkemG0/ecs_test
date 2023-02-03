@@ -1,3 +1,5 @@
 FROM nginx:alpine
-COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY ./conf/default.conf.template /etc/nginx/conf.d/default.conf.template
+
 EXPOSE 80
