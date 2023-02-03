@@ -5,12 +5,12 @@ services:
     container_name: 'first-container'
     build: ./container_1
     ports:
-      - 3000:80
+      - 3000:3000
   second-container:
     container_name: 'second-container'
     build: ./container_2
     ports:
-      - 3001:80
+      - 3001:3001
   reverse-proxy:
     container_name: 'reverse-proxy'
     build: ./reverse-proxy
